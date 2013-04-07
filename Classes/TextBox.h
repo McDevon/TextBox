@@ -32,6 +32,6 @@
 - (NSString*) string;
 - (void) setString:(NSString *)text;
 
-- (void)refreshView;
+//- (void)refreshView;
 
 @end
