@@ -68,9 +68,9 @@ typedef enum {
 
 @implementation TextBox
 
-@synthesize stringStore;
-@synthesize font;
-@synthesize currentNode;
+@synthesize stringStore = stringStore_;
+@synthesize font = font_;
+@synthesize currentNode = currentNode_;
 
 - (id) init
 {
@@ -91,13 +91,13 @@ typedef enum {
 		self.stringStore 	= text;
 		self.font 			= fontName;
 		
-		size 				= fontSize;
-		boxSize 			= dimensions;
+		size_ 				= fontSize;
+		boxSize_ 			= dimensions;
 		
-		horzAlign			= halignment;
-		vertAlign			= 1;			// Center
+		horzAlign_			= halignment;
+		vertAlign_			= 1;			// Center
 		
-		fontColor			= color;
+		fontColor_			= color;
 
 		anchorPoint_.x = 0.5f;
 		anchorPoint_.y = 0.5f;
@@ -127,7 +127,7 @@ typedef enum {
 
 - (NSString*) string
 {
-	return stringStore;
+	return stringStore_;
 }
 
 - (void) setString:(NSString *)text
@@ -145,14 +145,14 @@ typedef enum {
 	[self removeAllChildrenWithCleanup:YES];
 	
 	// Create font for size measurements
-	UIFont 	*uiFont = [UIFont fontWithName:font size:size];
+	UIFont 	*uiFont = [UIFont fontWithName:font_ size:size_];
 	
 	CGSize  testStringSize = [@" " sizeWithFont:uiFont];
 	CGFloat lineHeight = testStringSize.height;
 	CGFloat	spaceWidth = testStringSize.width;
 	
 	// Nothing to be done, if line height is too small
-	if (lineHeight > boxSize.height) {
+	if (lineHeight > boxSize_.height) {
 		return;
 	}
 	
@@ -163,13 +163,13 @@ typedef enum {
 	int		charPosition = 0;
 	int		lastWordPosition = 0;
 	
-	ccColor3B currentColor = fontColor;
+	ccColor3B currentColor = fontColor_;
 	
-	const char 	*text = [stringStore cStringUsingEncoding:NSUTF8StringEncoding];
+	const char 	*text = [stringStore_ cStringUsingEncoding:NSUTF8StringEncoding];
 	//int		textLength = strlen(text);
 	char	previousChar = '\0'; 
 		
-	CGFloat	maxWidth = boxSize.width;
+	CGFloat	maxWidth = boxSize_.width;
 	
 	CGFloat yDiff 		= 0.0f;
 	CGFloat xDiff 		= 0.0f;
@@ -213,7 +213,7 @@ typedef enum {
 			
 			NSString *string = [NSString stringWithCString:word encoding:NSUTF8StringEncoding];
 			if (string != nil && [string length] > 0) {
-				CCLabelTTF *label = [CCLabelTTF labelWithString:string fontName:font fontSize:size];
+				CCLabelTTF *label = [CCLabelTTF labelWithString:string fontName:font_ fontSize:size_];
 				[label setColor:currentColor];
 				label.anchorPoint = ccp(0.0f, 0.0f);
 				
@@ -275,7 +275,7 @@ typedef enum {
 			//NSLog(@"Close tag: %@", string);
 			
 			if (strcmp(word, "/color") == 0) {
-				currentColor = fontColor;
+				currentColor = fontColor_;
 			}
 			
 			lastWordPosition = charPosition + 1;
@@ -438,16 +438,16 @@ typedef enum {
 		}
 		
 		// Position node, if created
-		if (currentNode != nil && nodeFinished) {
+		if (currentNode_ != nil && nodeFinished) {
 			CGFloat newPos = linePosition + nodeSize.width + widthDiff + xDiff;
 			
 			if (newPos >= maxWidth || breakFound) {
 				
 				// Last item
 				if (breakFound && newPos < maxWidth) {
-					[currentNode setPosition:ccp(linePosition, yPosition)];
+					[currentNode_ setPosition:ccp(linePosition, yPosition)];
 					linePosition += nodeSize.width + widthDiff + xDiff;
-					[rowItems addObject:currentNode];
+					[rowItems addObject:currentNode_];
 				}
 				
 				// No additional space to last line
@@ -458,7 +458,7 @@ typedef enum {
 				}
 				
 				// Reposition all line items
-				if (horzAlign == UITextAlignmentCenter) {
+				if (horzAlign_ == UITextAlignmentCenter) {
 					
 					CGFloat amount = (linePosition - space) / 2.0f;
 					if (linePosition == 0.0f) {
@@ -466,16 +466,16 @@ typedef enum {
 					}
 					
 					for (CCNode *node in rowItems) {
-						[node setPosition:ccp(node.position.x - amount + ((0.5f - anchorPoint_.x) * boxSize.width), node.position.y)];
+						[node setPosition:ccp(node.position.x - amount + ((0.5f - anchorPoint_.x) * boxSize_.width), node.position.y)];
 					}
 				}
-				else if (horzAlign == UITextAlignmentLeft) {
+				else if (horzAlign_ == UITextAlignmentLeft) {
 					
 					for (CCNode *node in rowItems) {
-						[node setPosition:ccp(node.position.x - (anchorPoint_.x * boxSize.width), node.position.y)];
+						[node setPosition:ccp(node.position.x - (anchorPoint_.x * boxSize_.width), node.position.y)];
 					}
 				}
-				else if (horzAlign == UITextAlignmentRight) {
+				else if (horzAlign_ == UITextAlignmentRight) {
 					
 					CGFloat amount = linePosition - space;
 					if (linePosition == 0.0f) {
@@ -483,7 +483,7 @@ typedef enum {
 					}
 				
 					for (CCNode *node in rowItems) {
-						[node setPosition:ccp(node.position.x - amount + (anchorPoint_.x * boxSize.width), node.position.y)];
+						[node setPosition:ccp(node.position.x - amount + (anchorPoint_.x * boxSize_.width), node.position.y)];
 					}
 				}
 				
@@ -491,7 +491,7 @@ typedef enum {
 				linePosition = 0.0f;
 				
 				// Hitting max height
-				if (yPosition - lineHeight * 1.1f < -boxSize.height) {
+				if (yPosition - lineHeight * 1.1f < -boxSize_.height) {
 					breakFound = YES;
 				} else {
 					yPosition -= lineHeight * 1.1f;
@@ -500,15 +500,15 @@ typedef enum {
 			}
 			
 			if (!!! breakFound || (breakFound && newPos >= maxWidth)) {
-				[currentNode setPosition:ccp(linePosition + xDiff, yPosition + yDiff)];
+				[currentNode_ setPosition:ccp(linePosition + xDiff, yPosition + yDiff)];
 				linePosition += nodeSize.width + widthDiff + xDiff;
 			}
 			
 			prevWordWidth = nodeSize.width;
 			
-			if (yPosition >= -boxSize.height) {
-				[self addChild:currentNode];
-				[rowItems addObject:currentNode];
+			if (yPosition >= -boxSize_.height) {
+				[self addChild:currentNode_];
+				[rowItems addObject:currentNode_];
 			}
 			
 			// Release the node
@@ -528,7 +528,7 @@ typedef enum {
 	}
 	
 	// Reposition everything in y-scale
-	if (vertAlign == UITextAlignmentCenter) {
+	if (vertAlign_ == UITextAlignmentCenter) {
 		float alignValue = yPosition / 2.0f + lineHeight;
 		for (CCNode *node in [self children]) {
 			[node setPosition:ccp(node.position.x, node.position.y - alignValue /*+ ((0.5f - anchorPoint_.y) * boxSize.height)*/)];

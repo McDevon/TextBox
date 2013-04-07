@@ -11,18 +11,18 @@
 
 @interface TextBox : CCNode {
 	
-	NSString 	*stringStore;
-	NSString 	*font;
+	NSString 	*stringStore_;
+	NSString 	*font_;
 	
-	int			size;
-	int			horzAlign;
-	int			vertAlign;
+	int			size_;
+	int			horzAlign_;
+	int			vertAlign_;
 	
-	CGSize 		boxSize;
+	CGSize 		boxSize_;
 	
-	ccColor3B	fontColor;
+	ccColor3B	fontColor_;
 	
-	CCNode		*currentNode;
+	CCNode		*currentNode_;
 }
 
 + (TextBox*) textBoxWithString:(NSString*) text fontName:(NSString*) fontName fontSize:(int) fontSize;
