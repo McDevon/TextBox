@@ -8,6 +8,8 @@
 
 #import "TextBox.h"
 
+#define DEFAULT_LINE_SPACING 1.0f
+
 int numberOfHexValue(char hex) 
 {
 	// 0 ... 9
@@ -78,8 +80,10 @@ typedef enum {
 		self.stringStore = nil;
 		self.font = nil;
 		
-		anchorPoint_.x = 0.5f;
-		anchorPoint_.y = 0.5f;
+		anchorPoint_.x  = 0.5f;
+		anchorPoint_.y  = 0.5f;
+		
+		lineSpacing_	= DEFAULT_LINE_SPACING;
 	}
 	[self refreshView];
 	return self;
@@ -99,8 +103,10 @@ typedef enum {
 		
 		fontColor_			= color;
 
-		anchorPoint_.x = 0.5f;
-		anchorPoint_.y = 0.5f;
+		anchorPoint_.x	 	= 0.5f;
+		anchorPoint_.y 		= 0.5f;
+		
+		lineSpacing_		= DEFAULT_LINE_SPACING;
 	}
 	[self refreshView];
 	return self;
@@ -268,8 +274,6 @@ typedef enum {
 			strncpy(word, &text[lastWordPosition], wordSize - 1);
 			word[wordSize - 1] = '\0';
 			
-			lastWordPosition = charPosition + 1;
-			
 			// Read tag name
 			//NSString *string = [NSString stringWithCString:word encoding:NSUTF8StringEncoding];
 			//NSLog(@"Close tag: %@", string);
@@ -285,15 +289,13 @@ typedef enum {
 		}
 		
 		// End of img name
-		else if (state == tbs_tagSprite && text[charPosition] == ']') {
+		else if (state == tbs_tagSprite && (text[charPosition] == ']' || text[charPosition] == ';')) {
 			// Create a word
 			size_t wordSize = charPosition - lastWordPosition + 1;
 			
 			char *word = malloc(wordSize);
 			strncpy(word, &text[lastWordPosition], wordSize - 1);
 			word[wordSize - 1] = '\0';
-			
-			lastWordPosition = charPosition + 1;
 			
 			// Read tag name
 			NSString *string = [NSString stringWithCString:word encoding:NSUTF8StringEncoding];
@@ -306,25 +308,30 @@ typedef enum {
 				nodeSize = [sprite boundingBox].size;
 				[sprite setAnchorPoint:ccp(0.0f, 0.0f)];
 				
-				nodeFinished = YES;
+				if (text[charPosition] == ']') {
+					nodeFinished = YES;
+				}
 			}
 			
 			lastWordPosition = charPosition + 1;
-			state = tbs_text;
+			
+			if (text[charPosition] == ';') {
+				state = tbs_imgAttributeName;
+			} else {
+				state = tbs_text;
+			}
 			
 			free(word);
 		}
 		
 		// End of img name, start of attributes
-		else if (state == tbs_tagSprite && text[charPosition] == ';') {
+		/*else if (state == tbs_tagSprite && text[charPosition] == ';') {
 			// Create a word
 			size_t wordSize = charPosition - lastWordPosition + 1;
 			
 			char *word = malloc(wordSize);
 			strncpy(word, &text[lastWordPosition], wordSize - 1);
 			word[wordSize - 1] = '\0';
-			
-			lastWordPosition = charPosition + 1;
 			
 			// Read tag name
 			NSString *string = [NSString stringWithCString:word encoding:NSUTF8StringEncoding];
@@ -342,7 +349,7 @@ typedef enum {
 			state = tbs_imgAttributeName;
 			
 			free(word);
-		}
+		}*/
 		
 		// End of img attribute, possibly start of attributes
 		else if (state >= tbs_imgYAttribute && state <= tbs_imgWidthAttribute && (text[charPosition] == ';' || text[charPosition] == ']')) {
@@ -391,7 +398,7 @@ typedef enum {
 			
 			// Read tag name
 			//NSString *string = [NSString stringWithCString:word encoding:NSUTF8StringEncoding];
-			//NSLog(@"Tag name: %@", string);
+			//NSLog(@"img attribute name: %@", string);
 			
 			if (strcmp(word, "y") == 0) {
 				state = tbs_imgYAttribute;
@@ -491,10 +498,10 @@ typedef enum {
 				linePosition = 0.0f;
 				
 				// Hitting max height
-				if (yPosition - lineHeight * 1.1f < -boxSize_.height) {
+				if (yPosition - lineHeight * lineSpacing_ < -boxSize_.height) {
 					breakFound = YES;
 				} else {
-					yPosition -= lineHeight * 1.1f;
+					yPosition -= lineHeight * lineSpacing_;
 				}
 				
 			}

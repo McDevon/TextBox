@@ -23,6 +23,8 @@
 	ccColor3B	fontColor_;
 	
 	CCNode		*currentNode_;
+	
+	CGFloat		lineSpacing_;
 }
 
 + (TextBox*) textBoxWithString:(NSString*) text fontName:(NSString*) fontName fontSize:(int) fontSize;
