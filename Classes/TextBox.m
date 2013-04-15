@@ -54,6 +54,7 @@ typedef enum {
 	tbs_imgAttributeName,
 	tbs_imgYAttribute,
 	tbs_imgXAttribute,
+	tbs_imgScaleAttribute,
 	tbs_imgWidthAttribute,
 } TextBoxReadStates;
 
@@ -180,6 +181,7 @@ typedef enum {
 	CGFloat yDiff 		= 0.0f;
 	CGFloat xDiff 		= 0.0f;
 	CGFloat	widthDiff 	= 0.0f;
+	float	scaleValue	= 1.0f;
 	
 	NSMutableArray *rowItems = [NSMutableArray arrayWithCapacity:3];
 	
@@ -369,6 +371,8 @@ typedef enum {
 				xDiff = atof(word);
 			} else if (state == tbs_imgWidthAttribute) {
 				widthDiff = atof(word);
+			} else if (state == tbs_imgScaleAttribute) {
+				scaleValue = atof(word);
 			}
 			
 			// Change state
@@ -406,6 +410,8 @@ typedef enum {
 				state = tbs_imgXAttribute;
 			} else if (strcmp(word, "width") == 0) {
 				state = tbs_imgWidthAttribute;
+			} else if (strcmp(word, "scale") == 0) {
+				state = tbs_imgScaleAttribute;
 			}
 			
 			free(word);
@@ -440,6 +446,7 @@ typedef enum {
 			yDiff = 0.0f;
 			xDiff = 0.0f;
 			widthDiff = 0.0f;
+			scaleValue = 1.0f;
 			
 			state = tbs_text;
 		}
@@ -447,6 +454,9 @@ typedef enum {
 		// Position node, if created
 		if (currentNode_ != nil && nodeFinished) {
 			CGFloat newPos = linePosition + nodeSize.width + widthDiff + xDiff;
+			
+			// This triggers if an orphan word is last
+			BOOL positioned = NO;
 			
 			if (newPos >= maxWidth || breakFound) {
 				
@@ -456,11 +466,23 @@ typedef enum {
 					linePosition += nodeSize.width + widthDiff + xDiff;
 					[rowItems addObject:currentNode_];
 				}
+				else if (breakFound) {
+					// Last item special positioning (TODO: make this work without excpetion handling)
+					if (horzAlign_ == UITextAlignmentCenter) {
+						[currentNode_ setPosition:ccp(-nodeSize.width / 2.0f + ((0.5f - anchorPoint_.x) * boxSize_.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
+					} else if (horzAlign_ == UITextAlignmentLeft) {
+						[currentNode_ setPosition:ccp(- (anchorPoint_.x * boxSize_.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
+					} else if (horzAlign_ == UITextAlignmentRight) {
+						[currentNode_ setPosition:ccp(- (anchorPoint_.x * boxSize_.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
+					}
+					positioned = YES;
+				}
 				
 				// No additional space to last line
 				float space = 0.0f;
 				
-				if (!!! breakFound && text[charPosition] == ' ') {
+				if ((!!! breakFound && text[charPosition] == ' ')
+					|| positioned) {
 					space = spaceWidth;
 				}
 				
@@ -506,14 +528,20 @@ typedef enum {
 				
 			}
 			
-			if (!!! breakFound || (breakFound && newPos >= maxWidth)) {
+			if ((!!! breakFound || (breakFound && newPos >= maxWidth)) && !!! positioned) {
 				[currentNode_ setPosition:ccp(linePosition + xDiff, yPosition + yDiff)];
 				linePosition += nodeSize.width + widthDiff + xDiff;
+			}
+			
+			if (positioned) {
+				yPosition -= lineHeight * lineSpacing_;
 			}
 			
 			prevWordWidth = nodeSize.width;
 			
 			if (yPosition >= -boxSize_.height) {
+				[currentNode_ setScale:scaleValue];
+				
 				[self addChild:currentNode_];
 				[rowItems addObject:currentNode_];
 			}
@@ -526,6 +554,7 @@ typedef enum {
 			yDiff = 0.0f;
 			xDiff = 0.0f;
 			widthDiff = 0.0f;
+			scaleValue	= 1.0f;
 			
 		}
 		
