@@ -473,7 +473,7 @@ typedef enum {
 					} else if (horzAlign_ == UITextAlignmentLeft) {
 						[currentNode_ setPosition:ccp(- (anchorPoint_.x * boxSize_.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
 					} else if (horzAlign_ == UITextAlignmentRight) {
-						[currentNode_ setPosition:ccp(- (anchorPoint_.x * boxSize_.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
+						[currentNode_ setPosition:ccp(- (anchorPoint_.x * boxSize_.width) + (boxSize_.width - nodeSize.width) + xDiff, yPosition + yDiff - lineHeight * lineSpacing_)];
 					}
 					positioned = YES;
 				}
