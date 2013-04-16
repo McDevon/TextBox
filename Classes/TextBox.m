@@ -224,6 +224,7 @@ typedef enum {
 				CCLabelTTF *label = [CCLabelTTF labelWithString:string fontName:font_ fontSize:size_];
 				[label setColor:currentColor];
 				label.anchorPoint = ccp(0.0f, 0.0f);
+				[[label texture] setAliasTexParameters];
 				
 				// Hold on to the node
 				self.currentNode = label;
